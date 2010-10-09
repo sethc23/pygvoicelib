@@ -11,7 +11,7 @@ __author__ = 'Ehsan Foroughi'
 __email__ = 'ehsan.foroughi@teltub.com',
 __copyright__ = 'Copyright 2010, TELTUB Inc'
 __credits__ = ['Ehsan Foroughi']
-__license__ = 'GPL'
+__license__ = 'GPLv3'
 __version__ = '1.0'
 __all__ = ['GoogleVoice', 'GoVoError', 'LoginError', 'ServerError']
 
