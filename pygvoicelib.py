@@ -203,13 +203,17 @@ class GoogleVoice:
             return None
         err_code, resp = self._get_url_data(BASE_URL + url, data, {'Authorization': 'GoogleLogin auth=' + self.auth_token})
         if with_retry:
+            retry = False
             if (err_code == 401):
                 self._get_auth_token()
+                retry = True
             elif (err_code == 500):
                 self._get_rnr_se()
                 if self.handle_save_token:
                     self.handle_save_token(self)
-            err_code, resp = self._get_url_data(BASE_URL + url, data, {'Authorization': 'GoogleLogin auth=' + self.auth_token})
+                retry = True
+            if retry:
+                err_code, resp = self._get_url_data(BASE_URL + url, data, {'Authorization': 'GoogleLogin auth=' + self.auth_token})
         if err_code is not None:
             raise ServerError(err_code, resp)
         if mode != 'json':
