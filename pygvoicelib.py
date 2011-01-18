@@ -110,7 +110,10 @@ class GoogleVoice:
         if rnr_se:
             rnr_se = rnr_se.groups()[0]
         else:
-            raise LoginError('error', 'Unable to get rnr_se token')
+            if 'not available in your country' in ret:
+                raise LoginError('countryerror', 'You have not yet setup your Google Voice account. Please <a href="http://googe.com/voice" target="_blank" style="text-decoration:underline">configure your Google Voice</a> and try again.')
+            else:
+                raise LoginError('error', 'Unable to get rnr_se token')
         self.rnr_se = rnr_se
 
     def _process_resp(self, resp):
