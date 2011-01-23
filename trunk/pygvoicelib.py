@@ -225,7 +225,7 @@ class GoogleVoice:
             return resp
         res = GET_JSON_RE.search(resp)
         if not res:
-            if 'not available in your country' in ret:
+            if 'not available in your country' in resp:
                 raise LoginError('countryerror', LOGIN_ERR_MSG)
             return None
         if len(res.groups()) == 0:
