@@ -271,7 +271,7 @@ class GoogleVoice:
         """
         self._get_account_settings()
         if not self.account_settings:
-            return None
+            raise LoginError('notinitiated', LOGIN_ERR_MSG)
         ret_dict = {}
         for item in self.account_settings['phones'].values():
             num = item['phoneNumber']
