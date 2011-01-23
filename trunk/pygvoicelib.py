@@ -36,6 +36,8 @@ SETTINGS_URL = '/settings/tab/phones'
 CALL_URL = '/call/connect/'
 CANCEL_URL = '/call/cancel/'
 
+LOGIN_ERR_MSG = 'You have not yet setup your Google Voice account. Please <a href="http://googe.com/voice" target="_blank" style="text-decoration:underline">configure your Google Voice</a> and try again.'
+
 class GoVoError(Exception):
     pass
 
@@ -111,7 +113,7 @@ class GoogleVoice:
             rnr_se = rnr_se.groups()[0]
         else:
             if 'not available in your country' in ret:
-                raise LoginError('countryerror', 'You have not yet setup your Google Voice account. Please <a href="http://googe.com/voice" target="_blank" style="text-decoration:underline">configure your Google Voice</a> and try again.')
+                raise LoginError('countryerror', LOGIN_ERR_MSG)
             else:
                 raise LoginError('error', 'Unable to get rnr_se token')
         self.rnr_se = rnr_se
@@ -223,6 +225,8 @@ class GoogleVoice:
             return resp
         res = GET_JSON_RE.search(resp)
         if not res:
+            if 'not available in your country' in ret:
+                raise LoginError('countryerror', LOGIN_ERR_MSG)
             return None
         if len(res.groups()) == 0:
             return None
