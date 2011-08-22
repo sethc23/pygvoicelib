@@ -273,6 +273,8 @@ class GoogleVoice:
         if not self.account_settings:
             raise LoginError('notinitiated', LOGIN_ERR_MSG)
         ret_dict = {}
+        if 'phones' not in self.account_settings:
+            self.account_settings['phones'] = {}
         for item in self.account_settings['phones'].values():
             num = item['phoneNumber']
             if num.startswith('+'):
