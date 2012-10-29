@@ -25,7 +25,7 @@ USER_AGENT = 'Mozilla/5.0 (Windows; U; Windows NT 6.0; en-US; rv:1.9.1.13) Gecko
 REQ_HEADER = {'Content-Type': 'application/x-www-form-urlencoded;charset=utf-8', 'User-Agent': USER_AGENT}
 
 SERVICE = 'grandcentral'
-ACC_TYPE = 'GOOGLE'
+ACC_TYPE = 'GOOGLE_OR_HOSTED'
 APP_SOURCE = 'TELTUB-PlatForm-1.0'
 AUTH_ARGS = {'accountType':ACC_TYPE, 'source':APP_SOURCE, 'service':SERVICE}
 AUTH_URL = 'https://www.google.com/accounts/ClientLogin'
@@ -35,6 +35,9 @@ INDEX_URL = '/'
 SETTINGS_URL = '/settings/tab/phones'
 CALL_URL = '/call/connect/'
 CANCEL_URL = '/call/cancel/'
+DEL_FORWARD_URL = '/settings/deleteForwarding/'
+EDIT_FORWARD_URL = '/settings/editDefaultForwarding/'
+PORTING_URL = '/service/post'
 
 LOGIN_ERR_MSG = 'You have not yet setup your Google Voice account. Please <a href="http://googe.com/voice" target="_blank" style="text-decoration:underline">configure your Google Voice</a> and try again.'
 
@@ -326,3 +329,72 @@ class GoogleVoice:
         except ValueError:
             return False
         return ('ok' in ret) and (ret['ok'])
+
+    def edit_forward(self, num_id, enabled):
+        if not self.rnr_se:
+            _get_rnr_se()
+        if enabled:
+            enabled=1
+        else:
+            enabled=0
+        self.account_settings = None
+        params = {'_rnr_se': self.rnr_se,
+            'phoneId':num_id,
+            'enabled':enabled}
+        ret = self.get_auth_url(EDIT_FORWARD_URL, params, mode='raw')
+        if not ret:
+            return False, 'Unknown HTTP Error'
+        try:
+           ret = json.loads(ret)
+        except ValueError:
+            return False, 'Unknown error'
+        if (type(ret) is not dict) or ('ok' not in ret) or (not ret['ok']):
+            msg = 'Unable to del number from Google Voice.'
+            if (type(ret) is dict) and ('error' in ret):
+                msg += ' Reason: %s' % (ret['error'])
+            return False, msg
+        return True, None
+
+    def del_forward(self, num_id):
+        if not self.rnr_se:
+            _get_rnr_se()
+        self.account_settings = None
+        params = {'_rnr_se': self.rnr_se,
+            'id':num_id}
+        ret = self.get_auth_url(DEL_FORWARD_URL, params, mode='raw')
+        if not ret:
+            return False, 'Unknown HTTP Error'
+        try:
+           ret = json.loads(ret)
+        except ValueError:
+            return False, 'Unknown error'
+        if (type(ret) is not dict) or ('ok' not in ret) or (not ret['ok']):
+            msg = 'Unable to del number from Google Voice.'
+            if (type(ret) is dict) and ('error' in ret):
+                msg += ' Reason: %s' % (ret['error'])
+            return False, msg
+        return True, None
+
+    def get_port_status(self):
+        if not self.rnr_se:
+            _get_rnr_se()
+        self.account_settings = None
+        params = {'_rnr_se': self.rnr_se,
+            'mid':'1',
+            'req':'[]',
+            'sid':'8'}
+        ret = self.get_auth_url(PORTING_URL, params, mode='raw')
+        if not ret:
+            return False, 'Unknown HTTP Error'
+        ret = ret.replace('[,', '["",')
+        ret = ret.replace(',,', ',"",')
+        try:
+           ret = json.loads(ret)
+        except ValueError:
+            return False, 'Unknown error'
+        try:
+            unlocked = (ret[1][0][2][3] != 0)
+            paid = (ret[1][0][2][1] != 0)
+        except:
+            return False, 'Port status unknown'
+        return {'unlocked': unlocked, 'paid':paid}
